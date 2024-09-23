@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "react-big-calendar": "^1.14.1"
+  },
+  "devDependencies": {
+    "@types/react-big-calendar": "^1.8.12"
+  }
+}

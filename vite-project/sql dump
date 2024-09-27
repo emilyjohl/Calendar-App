@@ -1,0 +1,53 @@
+CREATE TABLE coaches (
+    id SERIAL PRIMARY KEY,
+    firstName VARCHAR(50) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    phoneNum CHAR(10),
+    availableSlots INT[],
+    previousSlots INT[]
+);
+
+CREATE TABLE students (
+    id SERIAL PRIMARY KEY,
+    firstName VARCHAR(50) NOT NULL,
+    lastName VARCHAR(100) NOT NULL,
+    phoneNum CHAR(10),
+    upcomingSlots INT[],
+    previousSlots INT[]
+);
+
+CREATE TABLE slots (
+    id SERIAL PRIMARY KEY,
+    start_time TIMESTAMP NOT NULL,  
+    end_time TIMESTAMP NOT NULL,     
+    title VARCHAR(50) NOT NULL,
+    bookedBy INT REFERENCES students(id),  
+    bookedFor INT REFERENCES coaches(id),   
+    rating INT,
+    comments VARCHAR(500)
+);
+
+
+INSERT INTO coaches (firstName, lastName, phoneNum, availableSlots, previousSlots)
+VALUES ('Coach', 'Sue', '1234567890', '{0}', '{0}');
+
+INSERT INTO students (firstName, lastName, phoneNum, upcomingSlots, previousSlots)
+VALUES ('Sue', 'Smith', '2121112222', '{0}', '{0}');
+
+BEGIN;
+
+INSERT INTO slots (start_time, end_time, title, bookedFor)
+VALUES (event.start, event.end, event.title, coach.coach_id);
+RETURNING id INTO inserted_id;
+
+UPDATE coaches
+SET previousslots = previousslots || inserted_id  -- Append the new id
+WHERE coach_id = coach.coach_id;  -- Specify the room to update
+
+COMMIT;
+
+
+
+  // SELECT *
+                        // FROM slots
+                        // WHERE slot_id = ANY($1);

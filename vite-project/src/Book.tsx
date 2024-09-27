@@ -8,8 +8,8 @@ type BookProps = {
 function Book ({ coachNum }: BookProps) {
   
   const [booked, setBooked ] = useState(false)
-
-  console.log(coachNum)
+// need to save a book me - and display the student num when its booked
+  // console.log(coachNum)
 
   return (
     <div>

@@ -1,36 +1,54 @@
 To do
 
-- [ ] Create a dropdown at the top that changes the context of who is logged in 
-    - [ ] Trigger an api call based on the name and id of the person, and change context of the app
-- [ ] Need to connect to db and create a schema
-- [ ] Styling - basic to ensure everything is viewable
+- [x] Create a dropdown at the top that changes the context of who is logged in 
+    - [x] Trigger an api call based on the name and id of the person, and 
+    - [x] change context of the app
+- [x] Need to connect to db and create a schema
+- [x] Need to delete previousslots from table 
+- [ ] Styling - basic to ensure everything is viewable and clear
+- [x] stop mulitlayered calendar
+- [ ] clean up code
 
 1. Coaches can add slots of availability to their calendars, always 2 hours long. 
-    - [ ] On select make fetch call to save into db
-    - [ ] Error handling for not making events in the past
+    - [x] On select make fetch call to save into db
+    - [x] Error handling for not making events in the past
     - [x] Frontend
+
 2. Coaches should see available slots
-    - [ ] On load, bring the available slots down from the db
+    - [x] On selecting the coach available slots and upcoming slots (oly from coach)
     - [x] Frontend
+
 3. Students can book upcoming available slots for any coach
-    - [ ] Change so only available for students
+
+    - [x] Should display the available slots from all coaches and thier upcoming booked slots from the db
+    - [x] Change different calendars display only available for students
         - [ ] Add error handling like
-            - [ ] Double popup to confirm booking and confirm canceling
             - [ ]  can’t cancel before 24 hours, 
             - [ ] can only book twice in one day
     - [ ] Backend call to save when booked
     - [x] Frontend
 
 4. When a slot is booked both student and coach can view each others phone num
-    - [ ] Need to attach backend from when it gets pulled and use the to set state and thus send via props
+    - [x] Need to attach backend from when it gets pulled and use the to set state and thus send via props
     - [ ] Needs some styling because right now you can’t see the num
     - [x] Frontend and props (phone num sent)
 
 5. After they compete a call the coaches should be able to give a 5 star rating and notes 
-    - [ ] Check for if event has passed and no current rating
-    - [ ] Click on event and popup shows to add rating
-    - [ ] Add rating and send to backend
+    - [x] Check for if event has passed and no current rating
+    - [x] Click on event and popup shows to add rating
+    - [x] Add rating and send to backend
 
 6. Coaches should be able to view past ratings
-    - [ ] Create new page for this view
-    - [ ] Pull from backend and display
+    - [ ] Create new or some way to view it nicer
+    - [x] Pull from backend and display ratings
+
+
+need to 
+- [ ] end to end testing
+- [ ] fix the rating viewing
+- [ ] clean up code
+- [ ] save bookedBy in db
+- [ ] run error handling
+    - [ ] multiple bookings in one section look busy
+    - [ ] cannot book day of
+- [ ] find way for phone numbers to be visible for each individual booking

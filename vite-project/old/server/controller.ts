@@ -4,6 +4,8 @@ const { Client } = pkg;
 import dotenv from 'dotenv';
 dotenv.config();
 
+// var request = require('superagent')
+
 //connect to postgresql database
 const connectionString = process.env.CONNECTIONSTRING
 const client = new Client({connectionString : connectionString});
@@ -47,7 +49,7 @@ const controller = {
             
             if (result.rows.length > 0) {
                 const availableSlots = result.rows[0].availableslots;
-                console.log('Available slots:', availableSlots.length);
+                console.log('Available slots:', availableSlots);
             
                 // Step 2: Fetch slot details for the retrieved slot_ids
                 if (availableSlots.length > 0) {
@@ -77,66 +79,9 @@ const controller = {
         }
     },
 
-    loadStudentData: async function (req: Request, res: Response, next: NextFunction){
-        try{
-            //return all available slots, will sort old in the frontend
-            console.log('inside loadStudentData')
-            const { student } = req.body
-            console.log('student id',student.student_id)
-            const queryEmptySlots = `
-                SELECT *
-                FROM slots
-                WHERE bookedBy IS NULL;
-            `;
-            const emptySlots = await client.query(queryEmptySlots);
-            console.log('empty slots', emptySlots.rows.length)
-            const queryBookedSlots = `
-                SELECT slots.*, coaches.phoneNum
-                FROM slots
-                JOIN coaches ON slots.bookedFor = coaches.coach_id
-                WHERE slots.bookedBy = $1;
-            `;
-            const values = [student.student_id];
-            const bookedSlots = await client.query(queryBookedSlots, values);
-            console.log('booked slots', bookedSlots.rows.length)
-
-            console.log('after queries')
-            if (emptySlots.rows.length <= 0) {
-                const result = {
-                    availableSlots: 0,
-                    bookedSlots: bookedSlots.rows
-                }
-                res.locals.slots = result
-                next()
-            }else {
-                //need to find the coach info for availableSlots and send it back
-                const result = {
-                    availableSlots: emptySlots.rows,
-                    bookedSlots: bookedSlots.rows
-                }
-                console.log(result)
-                res.locals.slots = result
-                next()
-            }
-            // if (result.rows.length > 0) {
-            //     console.log('Slot details:', result.rows);
-            //     res.locals.slots = result.rows
-            //     next()
-            // } else {
-            //     console.log('Slots not found.');
-            //     // console.log('Slot details:', result.rows);
-            //     res.locals.slots = 0
-            //     next()
-            // }              
-        }catch{
-
-        }
-    },
-
     saveAvailableSlot: async function (req: Request, res: Response, next: NextFunction){
         try{
             const { coach, slot } = req.body
-            console.log('slot', slot)
             const insertQuery = `
                 INSERT INTO slots (start_time, end_time, title, bookedFor)
                 VALUES ($1, $2, $3, $4)
@@ -182,34 +127,61 @@ const controller = {
         }
     },
 
-    saveBooking: async function (req: Request, res: Response, next: NextFunction){
+    loadStudentData: async function (req: Request, res: Response, next: NextFunction){
         try{
-            const { slot, student } = req.body
-            console.log('slot from req body', slot)
-            const updateSlotQuery = `
-                WITH updated_slot AS (
-                    UPDATE slots
-                    SET bookedBy = $1
-                    WHERE slot_id = $2
-                    RETURNING bookedfor
-                )
-                SELECT coaches.phonenum
-                FROM updated_slot
-                JOIN coaches ON updated_slot.bookedfor = coaches.coach_id;
-            `
-            const updateValues = [student.student_id, slot.slot_id];
-            const result = await client.query(updateSlotQuery, updateValues);
-            
+            //return all available slots, will sort old in the frontend
+            console.log('inside loadStudentData')
+            const { student } = req.body
+            console.log('student id',student.student_id)
+            const queryEmptySlots = `
+                SELECT *
+                FROM slots
+                WHERE bookedBy IS NULL;
+            `;
+            const emptySlots = await client.query(queryEmptySlots);
+            console.log('empty slots', emptySlots.rows.length)
+            const queryBookedSlots = `
+                SELECT slots.*, coaches.phoneNum
+                FROM slots
+                JOIN coaches ON slots.bookedFor = coaches.coach_id
+                WHERE slots.bookedBy = $1;
+            `;
+            const values = [student.student_id];
+            const bookedSlots = await client.query(queryBookedSlots, values);
+            console.log('booked slots', bookedSlots.rows)
 
-            console.log('made it', result.rows)
-            res.locals.result = result.rows
-            next()
-        }catch(err){
-            console.error('Error executing query', err.stack);
-            res.status(500).json({ error: 'Internal Server Error' }); // Handle errors
+            console.log('after queries')
+            if (emptySlots.rows.length <= 0) {
+                const result = {
+                    availableSlots: 0,
+                    bookedSlots: bookedSlots.rows
+                }
+                res.locals.slots = result
+                next()
+            }else {
+                //need to find the coach info for availableSlots and send it back
+                const result = {
+                    availableSlots: emptySlots.rows,
+                    bookedSlots: bookedSlots.rows
+                }
+                console.log(result)
+                res.locals.slots = result
+                next()
+            }
+            // if (result.rows.length > 0) {
+            //     console.log('Slot details:', result.rows);
+            //     res.locals.slots = result.rows
+            //     next()
+            // } else {
+            //     console.log('Slots not found.');
+            //     // console.log('Slot details:', result.rows);
+            //     res.locals.slots = 0
+            //     next()
+            // }              
+        }catch{
+
         }
     },
-
 
 }
 

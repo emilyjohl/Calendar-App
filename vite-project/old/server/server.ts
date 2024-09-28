@@ -26,10 +26,6 @@ app.post('/api/saveRating', controller.saveRating, (req: Request, res: Response 
     res.status(201).send(res.locals.sucess)
 })
 
-app.post('/api/saveBooking', controller.saveBooking, (req: Request, res: Response ) => {
-    res.status(201).send(res.locals.result)
-})
-
 app.post('/api/loadStudentData', controller.loadStudentData, (req: Request, res: Response ) => {
     res.status(201).send(res.locals.slots)
 })
@@ -38,3 +34,10 @@ app.post('/api/loadStudentData', controller.loadStudentData, (req: Request, res:
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+// // handle graceful shutdown
+// process.on('SIGINT', async () => {
+//     await client.end();
+//     console.log("Database connection closed");
+//     process.exit();
+// });

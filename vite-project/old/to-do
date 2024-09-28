@@ -25,7 +25,7 @@ To do
         - [ ] Add error handling like
             - [ ]  can’t cancel before 24 hours, 
             - [ ] can only book twice in one day
-    - [x] Backend call to save when booked
+    - [ ] Backend call to save when booked
     - [x] Frontend
 
 4. When a slot is booked both student and coach can view each others phone num
@@ -45,11 +45,10 @@ To do
 
 need to 
 - [ ] end to end testing
-- [x] fix the rating viewing
-- [x] clean up code
-- [x] save bookedBy in db
+- [ ] fix the rating viewing
+- [ ] clean up code
+- [ ] save bookedBy in db
 - [ ] run error handling
-- [x] find way for phone numbers to be visible for each individual booking
-- [x] fix popup view for selecting available slot
-- [x] make all available slots 2 hours
-- [ ] fix time bug
+    - [ ] multiple bookings in one section look busy
+    - [ ] cannot book day of
+- [ ] find way for phone numbers to be visible for each individual booking

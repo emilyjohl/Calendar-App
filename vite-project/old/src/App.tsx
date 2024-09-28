@@ -3,26 +3,59 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import moment from 'moment';
-import 'moment-timezone';
 import { useEffect, useState } from 'react';
 import Book from './Book.tsx'
 import Rating from './Rating.tsx';
 import superagent from 'superagent';
 import { DropdownItem } from 'react-bootstrap';
 import { isPast } from 'date-fns';
-import { Student, Coach, AvailableSlot, Selectable } from '../types/types.ts'
-// import { Calendar, Event, Views } from '@types/react-big-calendar';
-
 
 const localizer = momentLocalizer(moment);
 
+type AvailableSlot = {
+  title: string;
+  start_time: Date;
+  end_time: Date;
+  bookedby: string;
+  bookedfor: string;
+  comments: string;
+  rating: number;
+  slot_id: null | number;
+  type: 'available' | 'booked';
+};
+
+type Selectable = {
+  start_time: Date;
+  end_time: Date;
+};
+
+type Coach = {
+  coach_id: Number;
+  firstname: string;
+  lastname: string;
+  phonenum: number;
+  availableSlots: number[];
+  previousSlots: number[]
+};
+
+type Student = {
+  student_id: Number;
+  firstname: string;
+  lastName: string;
+  phonenum: number;
+  upcomingSlots: number[];
+  previousSlots: number[]
+};
 
 function App() {
   const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
   const [showPopup, setShowPopup] = useState(false);
   const [eventInfo, setEventInfo] = useState<Selectable | null>(null);
   const [userNames, setUserNames] = useState<Coach[] | Student[]>()
+  // const [studentNames, setStudentNames] = useState<string>('')
+
   const [currentUser, setCurrentUser] = useState<Coach | Student>()
+  const [coachNum, setCoachNum] = useState<number>()
 
   useEffect(() => {
     bypassAuthentication() 
@@ -50,6 +83,7 @@ function App() {
   }
 
   async function loadCurrentUser(selectedUser: Coach | Student) {
+    console.log('inside loadCurrentUser', selectedUser)
     setAvailableSlots([])
     setCurrentUser(selectedUser);
 
@@ -66,7 +100,7 @@ function App() {
               console.log('error!')
             }else {
               const slots = res.body;
-              console.log('slots', slots)
+              //need to add handling for viewing the phone num
               setAvailableSlots(prevSlots => [...prevSlots, ...slots.map(slot => ({
                 title: slot.title,
                 start_time: new Date(slot.start_time),
@@ -76,10 +110,10 @@ function App() {
                 comments: slot.comments,
                 rating: slot.rating,
                 slot_id: slot.slot_id,
-                type: slot.bookedby ? 'booked' : 'available', // Change type based on bookedBy
-                coach_num: selectedUser.phonenum,
-                student_num: slot.phonenum
+                type: 'available'
               }))]);
+
+              setCoachNum(selectedUser.phonenum);
               if (!slots.length) {
                   alert('Add available slots by clicking the calendar');
               }
@@ -106,10 +140,6 @@ function App() {
               console.log('returned', availableSlots, bookedSlots)
               // setCoachNum(availableSlots.phonenum)
               // delete availableSlots.phonenum
-              if (!availableSlots.length) {
-                alert('No available slots from coaches');
-                return
-            }
          
               setAvailableSlots(prevSlots => [...prevSlots, ...availableSlots.map(slot => ({
                 title: slot.title,
@@ -124,19 +154,7 @@ function App() {
               }))]);
 
               if(bookedSlots.length > 0){
-                setAvailableSlots(prevSlots => [...prevSlots, ...bookedSlots.map(slot => ({
-                  title: slot.title,
-                  start_time: new Date(slot.start_time),
-                  end_time: new Date(slot.end_time),
-                  bookedby: slot.bookedby,
-                  bookedfor: slot.bookedfor,
-                  comments: slot.comments,
-                  rating: slot.rating,
-                  slot_id: slot.slot_id,
-                  type: 'booked',
-                  coach_num: slot.phonenum,
-                  student_num: selectedUser.phonenum
-                }))]);
+
               }
 
               // setCoachNum(selectedUser.phonenum);
@@ -151,9 +169,13 @@ function App() {
     }
   }
 
+
+  // const handleSelectSlot = ({ start_time }: Selectable) => {
    const handleSelectSlot = ({ start }: { start: Date;  }) => {
-      // renaming to start_time
-      const start_time = start;
+      const start_time = start; // Rename to start_time
+      // const end_time = end;     // You can also rename this if you want
+      console.log('select slot', start_time)
+      //error handlign for creating new availabilities too soon
       const now = moment(); 
       const selectedStart = moment(start_time);
         if (selectedStart.isSame(now, 'day') || selectedStart.isBefore(now)) {
@@ -166,21 +188,20 @@ function App() {
   };
 
   async function createAvailableSlot() {
+    console.log('create AVailable Slot called', eventInfo, currentUser)
     if (!eventInfo) return;
     if (!currentUser) return;
 
     const newSlot: AvailableSlot = {
       title: `${currentUser.firstname} Availabile`,
       start_time: eventInfo.start_time, 
-      end_time: eventInfo.end_time,    
-      bookedby: null,
-      bookedfor: null,
+      end_time: eventInfo.end_time,     
+      bookedby: '',
+      bookedfor: '',
       comments: '',
       rating: 0,
       slot_id: null,
-      type: 'available',
-      coach_num: currentUser.phonenum,
-      student_num: null
+      type: 'available'
     };
 
     console.log('New Event:', newSlot);
@@ -194,30 +215,29 @@ function App() {
         .set('accept', 'json')
         .end((err, res) => {
           if(err){
-            alert('There has been an error')
+            console.log('error!')
           }else {
-            if(res){
-              setAvailableSlots(prevSlots => [...prevSlots, newSlot]);
-              setShowPopup(false); 
-              return;
-            }else {
-              alert('There has been an error')
-            };
+            console.log('back, now set to state', res)
+            //type available?
+            setAvailableSlots(prevSlots => [...prevSlots, newSlot]);
+            console.log('current user', currentUser)
+            setCoachNum(currentUser.phonenum)
+            setShowPopup(false); 
           }
         })
     }
     catch{
-      alert('There has been an error')
+      console.log('unable to create slot')
     }
   };
 
 
   return (
-    <div className='app-container'>
+    <div>
       <div>
-        <Dropdown className='dropdown' >
-            <Dropdown.Toggle variant="primary" id="dropdown-basic">
-              Select A User to Start
+        <Dropdown>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+              Dropdown Button
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
@@ -229,7 +249,8 @@ function App() {
                     );
                   } else {
                     return (
-                      <DropdownItem onClick={() => loadCurrentUser(element)} key={index}>Student: {element.firstname}</DropdownItem>
+                      <DropdownItem onClick={() => loadCurrentUser(element)} key={index}>Coach: {element.firstname}</DropdownItem>
+                      // <DropdownItem key={index}>Student: {element.firstname}</DropdownItem>
                     );
                   }
                 })
@@ -252,14 +273,20 @@ function App() {
             min={new Date(0, 0, 0, 9, 0)} 
             max={new Date(0, 0, 0, 19, 0)}
             components={{
-              event: (eventProps: Event) => {
+              // event: (eventProps) => 
 
+              
+              //   <BookWrapper coachNum={coachNum} {...eventProps} 
+              // />,
+              event: (eventProps) => {
                 const { event } = eventProps; // Extract the event from eventProps
                 const eventStartTime = new Date(event.start_time); // Convert to Date if not already
 
-                return isPast(eventStartTime) || event.type === 'booked'? (
-                    <Rating availableSlot={event} {...eventProps} /> // Replace with your past event component
+                return isPast(eventStartTime) && event.type =='booked' ? (
+                    // get phone num here somehow
+                    <Rating currentCoach={currentUser} availableSlot={event} {...eventProps} /> // Replace with your past event component
                 ) : (
+                    // <Book coachNum={coachNum} {...eventProps} />
                     <></>
                 );
             },
@@ -278,13 +305,20 @@ function App() {
               min={new Date(0, 0, 0, 9, 0)} 
               max={new Date(0, 0, 0, 19, 0)}
               components={{
+                // event: (eventProps) => 
+
+                
+                //   <BookWrapper coachNum={coachNum} {...eventProps} 
+                // />,
                 event: (eventProps) => {
-                  const { event } = eventProps; 
-                  const eventStartTime = new Date(event.start_time); 
+                  const { event } = eventProps; // Extract the event from eventProps
+                  const eventStartTime = new Date(event.start_time); // Convert to Date if not already
+
                   return isPast(eventStartTime) ? (
+                      // <Rating currentCoach={currentUser} availableSlot={event} {...eventProps} /> // Replace with your past event component
                       <></>
                       ) : (
-                      <Book currentStudent={currentUser} {...eventProps} availableSlot={event} />
+                      <Book coachNum={coachNum} {...eventProps} />
                   );
               },
               }}

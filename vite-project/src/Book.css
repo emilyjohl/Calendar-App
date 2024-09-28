@@ -1,0 +1,11 @@
+.booked-container{
+    font-size: 11px;
+}
+
+#book-me {
+    font-size: 10px;
+    padding: 3px;
+    text-align: center;
+    margin-top: 5px;
+    width: 100%;
+}

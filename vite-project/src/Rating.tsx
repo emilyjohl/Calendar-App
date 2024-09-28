@@ -1,68 +1,55 @@
 import { useEffect, useState } from 'react';
 import './Rating.css'
 import superagent from 'superagent';
+import { RatingProps } from '../types/types';
 
 
-type CurrentCoach = {
-    coach_id: number; // Use lowercase 'number' instead of 'Number'
-    firstname: string;
-    lastname: string;
-    phonenum: number;
-    availableSlots: number[];
-    previousSlots: number[];
-};
-
-type AvailableSlot = {
-    title: string;
-    start_time: Date;
-    end_time: Date;
-    bookedby: string;
-    bookedfor: string;
-    comments: string;
-    rating: number;
-  };
-  
-
-type RatingProps = {
-    currentCoach: CurrentCoach; // Define props type
-    availableSlot: AvailableSlot;
-};
-
-function Rating({ currentCoach, availableSlot }: RatingProps) {
+function Rating({ availableSlot }: RatingProps) {
     const [rated, setRated] = useState(false);
-    const [rating, setRating] = useState(0); // Initialize the rating state
-    const [comment, setComment] = useState(''); // Initialize the rating state
-    const [fetchedRating, setFetchedRating] = useState(null);
+    const [booked, setBooked] = useState(false);
+    const [studentNum, setStudentNum] = useState(availableSlot.student_num)
 
+    const [rating, setRating] = useState(0);
+    const [comments, setComments] = useState(''); 
+    const [showPopup, setShowPopup] = useState(false);
+
+    // const [isPast, setIsPast] = useState(past)
 
     useEffect(() => {
+        console.log('hello', availableSlot.comments)
+        if(availableSlot.type === 'booked')setBooked(true)
         if(availableSlot.rating > 0){
             setRated(true)
             setRating(availableSlot.rating)
-            setComment(availableSlot.comments)
+            setComments(availableSlot.comments)
         }
 
         console.log(rating)
-    })  
+    },[])  
     
     async function submitComment() {
-        console.log('clicked', availableSlot)
-        if(rating > 0){
+        console.log('clicked', rating)
+        
+        if(rating <= 0 && showPopup){
+            alert('Please select a rating first')
+        }else if(rating > 0){
             try{
                 superagent
                   .post('/api/saveRating')
                   .send({
                     slot: availableSlot,
-                    comment: comment,
+                    comment: comments,
                     rating: rating
                   })
                   .set('accept', 'json')
                   .end((err, res) => {
                     if(err){
                         console.log('error!')
+                        setShowPopup(false)
                     }else {
                         console.log('returned', res)
                         setRated(true)
+                        setShowPopup(false)
                     }
                 })
             }catch{
@@ -70,78 +57,110 @@ function Rating({ currentCoach, availableSlot }: RatingProps) {
             }
         }
     }
-
-
-
-    // console.log('currentCoach', currentCoach, 'availableslot', availableSlot);
-
+    
     return (
-        <div>
-            {rated ? (
-                <div>Thank you for your rating!
+        <div className='rating-container'>
+            {booked ? (
+                <p>Booked By {studentNum}</p>
+            ) : rated ? (
+                <div>
+                    Rated:
+                    <div className="rating">
+                        {[5, 4, 3, 2, 1].map((star) => (
+                            <span key={star}>
+                                <label
+                                    htmlFor={`star${star}`}
+                                    className={`rating-star ${rating >= star ? 'checked' : ''}`}
+                                >
+                                    <i className="fas fa-star"></i>
+                                </label>
+                            </span>
+                        ))}
+                    </div>
+                    <button  onClick={() => setShowPopup(true)}>View Comment</button>
+                    {showPopup ?
+                    <div className='TRYTHIS'>
+                        <div className='rating-popup-content'>
+                            <p>{comments}</p>
+                            <div className='button-container'>
+                                <button onClick={() => setShowPopup(false)}>Cancel</button>
+                            </div>
 
-                    <p>rated {rating}</p>
-                    <p>{comment}</p>
+                        </div>
+                    </div>
+                    :
+                    <></>
+                    }
                 </div>
-        //         <div className="rating">
-        //     {[5, 4, 3, 2, 1].map((star) => (
-        //         <span key={star}>
-        //             <input
-        //                 type="radio"
-        //                 name="rating"
-        //                 id={`star${star}`}
-        //                 value={star}
-        //                 checked={rating === star} // Ensure the radio is checked based on the rating
-        //                 onChange={() => setRating(star)}
-        //                 className="rating-input" // Hide the radio button
-        //             />
-        //             <label
-        //                 htmlFor={`star${star}`}
-        //                 title={`${star} stars`}
-        //                 className={`rating-star ${rating >= star ? 'checked' : ''}`}
-        //             >
-        //                 <i className="fas fa-star"></i>
-        //             </label>
-        //         </span>
-        //     ))}
-        // </div>
             ) : (
                 <div>
+                    {/* <div className="rating">
+                        {[5, 4, 3, 2, 1].map((star) => (
+                            <span key={star}>
+                                <input
+                                    type="radio"
+                                    name="rating"
+                                    id={`star${star}`}
+                                    value={star}
+                                    checked={rating === star}
+                                    onChange={() => setRating(star)}
+                                    className="rating-input" 
+                                />
+                                <label
+                                    htmlFor={`star${star}`}
+                                    title={`${star} stars`}
+                                    className={`rating-star ${rating >= star ? 'checked' : ''}`}
+                                    onClick={() => setRating(star)}
+                                >
+                                    <i className="fas fa-star"></i>
+                                </label>
+                            </span>
+                        ))}
+                    </div> */}
                     <div className="rating">
-                    <input type="radio" name="rating" id="star5" value="5" onClick={() => setRating(5)} />
-                    <label htmlFor="star5" title="5 stars">
-                        <i className={`fas fa-star ${rating >= 5 ? 'checked' : ''}`}></i>
-                    </label>
-
-                    <input type="radio" name="rating" id="star4" value="4" onClick={() => setRating(4)} />
-                    <label htmlFor="star4" title="4 stars">
-                        <i className={`fas fa-star ${rating >= 4 ? 'checked' : ''}`}></i>
-                    </label>
-
-                    <input type="radio" name="rating" id="star3" value="3" onClick={() => setRating(3)} />
-                    <label htmlFor="star3" title="3 stars">
-                        <i className={`fas fa-star ${rating >= 3 ? 'checked' : ''}`}></i>
-                    </label>
-
-                    <input type="radio" name="rating" id="star2" value="2" onClick={() => setRating(2)} />
-                    <label htmlFor="star2" title="2 stars">
-                        <i className={`fas fa-star ${rating >= 2 ? 'checked' : ''}`}></i>
-                    </label>
-
-                    <input type="radio" name="rating" id="star1" value="1" onClick={() => setRating(1)} />
-                    <label htmlFor="star1" title="1 star">
-                        <i className={`fas fa-star ${rating >= 1 ? 'checked' : ''}`}></i>
-                    </label>
-                </div>
-
-                    <div>
-                        <input type="text" onChange={(e) => setComment(e.target.value)} />
-                        <button onClick={() => submitComment()}>Submit Rating</button>
+                        {[5, 4, 3, 2, 1].map((star) => (
+                            <span key={star}>
+                                <input
+                                    type="radio"
+                                    name="rating"
+                                    id={`star${star}`}
+                                    value={star}
+                                    checked={rating === star}
+                                    onChange={() => setRating(star)}
+                                    className="rating-input" 
+                                />
+                                <label
+                                    htmlFor={`star${star}`}
+                                    title={`${star} stars`}
+                                    className={`rating-star ${rating >= star ? 'checked' : ''}`}
+                                >
+                                    <i className="fas fa-star"></i>
+                                </label>
+                            </span>
+                        ))}
                     </div>
+                    <button onClick={() => setShowPopup(true)}>Add Comments</button>
+                    {showPopup ?
+                    <div className='popup'>
+                        <div className='popup-content'>
+                            <textarea className='big-textbox' onChange={(e) => setComments(e.target.value)} />
+                            <div className='button-container'>
+                                <button onClick={() => submitComment()}>Submit Rating</button>
+                                <button onClick={() => setShowPopup(false)}>Cancel</button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    :
+                    <></>
+                    }
+                    
                 </div>
             )}
         </div>
     );
+    
 }
 
 export default Rating;

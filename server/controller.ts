@@ -14,7 +14,6 @@ const controller = {
 
     bypassAuth: async function (req: Request, res: Response, next: NextFunction){
         try {
-            console.log('inside bypassAuth')
             const coachesQuery = 'SELECT * FROM coaches'; 
             const studentsQuery = 'SELECT * FROM students';
             const coaches = await client.query(coachesQuery);
@@ -23,18 +22,16 @@ const controller = {
                 coaches: coaches.rows,
                 students: students.rows
             }
-            res.locals.rows = (result); // result.rows contains the data from the query
+            res.locals.rows = (result); 
             next()
         } catch (err) {
             console.error('Error executing query', err.stack);
-            res.status(500).json({ error: 'Internal Server Error' }); // Handle errors
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     },
 
     loadCoachData: async function (req: Request, res: Response, next: NextFunction){
         try{
-            //return all available slots, will sort old in the frontend
-            console.log('inside loadCoachData')
             const { coach } = req.body
             const query = `
                 SELECT availableslots
@@ -47,9 +44,6 @@ const controller = {
             
             if (result.rows.length > 0) {
                 const availableSlots = result.rows[0].availableslots;
-                console.log('Available slots:', availableSlots.length);
-            
-                // Step 2: Fetch slot details for the retrieved slot_ids
                 if (availableSlots.length > 0) {
                     const slotQuery = `
                       
@@ -61,35 +55,32 @@ const controller = {
                     const slotValues = [availableSlots];
             
                     const slotResult = await client.query(slotQuery, slotValues);
-                    console.log('Slot details:', slotResult.rows.length);
                     res.locals.slots = slotResult.rows
                     next()
                 } else {
                     res.locals.slots = 0
                     next()
-                    console.log('No available slots for this coach.');
                 }
             } else {
-                console.log('Coach not found.');
+              res.locals.slots = 0
+              next()
             }              
-        }catch{
-
+        }catch(err){
+          console.error('Error executing query', err.stack);
+          res.status(500).json({ error: 'Internal Server Error' });
         }
     },
 
     loadStudentData: async function (req: Request, res: Response, next: NextFunction){
         try{
             //return all available slots, will sort old in the frontend
-            console.log('inside loadStudentData')
             const { student } = req.body
-            console.log('student id',student.student_id)
             const queryEmptySlots = `
                 SELECT *
                 FROM slots
                 WHERE bookedBy IS NULL;
             `;
             const emptySlots = await client.query(queryEmptySlots);
-            console.log('empty slots', emptySlots.rows.length)
             const queryBookedSlots = `
                 SELECT slots.*, coaches.phoneNum
                 FROM slots
@@ -98,9 +89,7 @@ const controller = {
             `;
             const values = [student.student_id];
             const bookedSlots = await client.query(queryBookedSlots, values);
-            console.log('booked slots', bookedSlots.rows.length)
 
-            console.log('after queries')
             if (emptySlots.rows.length <= 0) {
                 const result = {
                     availableSlots: 0,
@@ -114,29 +103,18 @@ const controller = {
                     availableSlots: emptySlots.rows,
                     bookedSlots: bookedSlots.rows
                 }
-                console.log(result)
                 res.locals.slots = result
                 next()
-            }
-            // if (result.rows.length > 0) {
-            //     console.log('Slot details:', result.rows);
-            //     res.locals.slots = result.rows
-            //     next()
-            // } else {
-            //     console.log('Slots not found.');
-            //     // console.log('Slot details:', result.rows);
-            //     res.locals.slots = 0
-            //     next()
-            // }              
-        }catch{
-
+            }           
+        }catch(err){
+          console.error('Error executing query', err.stack);
+          res.status(500).json({ error: 'Internal Server Error' });
         }
     },
 
     saveAvailableSlot: async function (req: Request, res: Response, next: NextFunction){
         try{
             const { coach, slot } = req.body
-            console.log('slot', slot)
             const insertQuery = `
                 INSERT INTO slots (start_time, end_time, title, bookedFor)
                 VALUES ($1, $2, $3, $4)
@@ -158,14 +136,13 @@ const controller = {
             next()
         }catch(err){
             console.error('Error executing query', err.stack);
-            res.status(500).json({ error: 'Internal Server Error' }); // Handle errors
+            res.status(500).json({ error: 'Internal Server Error' }); 
         }
     },
 
     saveRating: async function (req: Request, res: Response, next: NextFunction){
         try{
             const { slot, comment, rating } = req.body
-            console.log('slot from req body', slot)
             const updateSlotQuery = `
                 UPDATE slots
                 SET comments = $1, rating = $2
@@ -173,19 +150,17 @@ const controller = {
             `
             const updateValues = [comment, rating, slot.slot_id];
             await client.query(updateSlotQuery, updateValues);
-            console.log('made it')
             res.locals.sucess = true
             next()
         }catch(err){
             console.error('Error executing query', err.stack);
-            res.status(500).json({ error: 'Internal Server Error' }); // Handle errors
+            res.status(500).json({ error: 'Internal Server Error' }); 
         }
     },
 
     saveBooking: async function (req: Request, res: Response, next: NextFunction){
         try{
             const { slot, student } = req.body
-            console.log('slot from req body', slot)
             const updateSlotQuery = `
                 WITH updated_slot AS (
                     UPDATE slots
@@ -201,12 +176,11 @@ const controller = {
             const result = await client.query(updateSlotQuery, updateValues);
             
 
-            console.log('made it', result.rows)
             res.locals.result = result.rows
             next()
         }catch(err){
             console.error('Error executing query', err.stack);
-            res.status(500).json({ error: 'Internal Server Error' }); // Handle errors
+            res.status(500).json({ error: 'Internal Server Error' }); 
         }
     },
 

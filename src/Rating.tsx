@@ -7,29 +7,22 @@ import { RatingProps } from '../types/types';
 function Rating({ availableSlot }: RatingProps) {
     const [rated, setRated] = useState(false);
     const [booked, setBooked] = useState(false);
-    const [studentNum, setStudentNum] = useState(availableSlot.student_num)
+    const [studentNum] = useState(availableSlot.student_num)
 
     const [rating, setRating] = useState(0);
     const [comments, setComments] = useState(''); 
     const [showRatingPopup, setShowRatingPopup] = useState(false);
 
-    // const [isPast, setIsPast] = useState(past)
-
     useEffect(() => {
-        console.log('hello', availableSlot.comments)
         if(availableSlot.type === 'booked')setBooked(true)
         if(availableSlot.rating > 0){
             setRated(true)
             setRating(availableSlot.rating)
             setComments(availableSlot.comments)
         }
-
-        console.log(rating)
     },[])  
     
-    async function submitComment() {
-        console.log('clicked', rating)
-        
+    async function submitComment() {        
         if(rating <= 0 && showRatingPopup){
             alert('Please select a rating first')
         }else if(rating > 0){
@@ -44,12 +37,13 @@ function Rating({ availableSlot }: RatingProps) {
                   .set('accept', 'json')
                   .end((err, res) => {
                     if(err){
-                        console.log('error!')
-                        setShowRatingPopup(false)
+                      alert('An error occured')
+                      setShowRatingPopup(false)
                     }else {
-                        console.log('returned', res)
+                      if(res.body === true){
                         setRated(true)
                         setShowRatingPopup(false)
+                      }else return
                     }
                 })
             }catch{

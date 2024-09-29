@@ -11,7 +11,6 @@ import superagent from 'superagent';
 import { DropdownItem } from 'react-bootstrap';
 import { isPast } from 'date-fns';
 import { Student, Coach, AvailableSlot, Selectable } from '../types/types.ts'
-// import { Calendar, Event, Views } from '@types/react-big-calendar';
 
 
 const localizer = momentLocalizer(moment);
@@ -35,17 +34,15 @@ function App() {
         .set('accept', 'json')
         .end((err, res) => {
           if(err){
-            console.log('error!')
+            alert('An error occured')
           }else {
             const data = res.body;
-            console.log(data);
             const { coaches, students } = data;
-            console.log(coaches, )
             setUserNames(coaches.concat(students))
           }
         });
     }catch{
-      console.log('error')
+      alert('An error occured')
     }
   }
 
@@ -63,10 +60,9 @@ function App() {
           .set('accept', 'json')
           .end((err, res) => {
             if(err){
-              console.log('error!')
+              alert('An error occured')
             }else {
               const slots = res.body;
-              console.log('slots', slots)
               setAvailableSlots(prevSlots => [...prevSlots, ...slots.map(slot => ({
                 title: slot.title,
                 start_time: new Date(slot.start_time),
@@ -76,7 +72,7 @@ function App() {
                 comments: slot.comments,
                 rating: slot.rating,
                 slot_id: slot.slot_id,
-                type: slot.bookedby ? 'booked' : 'available', // Change type based on bookedBy
+                type: slot.bookedby ? 'booked' : 'available', 
                 coach_num: selectedUser.phonenum,
                 student_num: slot.phonenum
               }))]);
@@ -86,10 +82,9 @@ function App() {
             }
           });
       }catch{
-        console.log('error')
+        alert('An error occured')
       }
     }else{
-      console.log('inside student')
       try{
         superagent
           .post('/api/loadStudentData')
@@ -99,13 +94,9 @@ function App() {
           .set('accept', 'json')
           .end((err, res) => {
             if(err){
-              console.log('error!')
+              alert('An error occured')
             }else {
               const { availableSlots, bookedSlots } = res.body;
-              
-              console.log('returned', availableSlots, bookedSlots)
-              // setCoachNum(availableSlots.phonenum)
-              // delete availableSlots.phonenum
               if (!availableSlots.length) {
                 alert('No available slots from coaches');
                 return
@@ -138,21 +129,15 @@ function App() {
                   student_num: selectedUser.phonenum
                 }))]);
               }
-
-              // setCoachNum(selectedUser.phonenum);
-              // if (!slots.length) {
-              //     alert('Add available slots by clicking the calendar');
-              // }
             }
           });
       }catch{
-        console.log('error')
+        alert('An error occured')
       }
     }
   }
 
    const handleSelectSlot = ({ start }: { start: Date;  }) => {
-      // renaming to start_time
       const start_time = start;
       const now = moment(); 
       const selectedStart = moment(start_time);
@@ -183,7 +168,6 @@ function App() {
       student_num: null
     };
 
-    console.log('New Event:', newSlot);
     try{
       superagent
         .post('/api/saveAvailableSlot')
@@ -254,11 +238,11 @@ function App() {
             components={{
               event: (eventProps: Event) => {
 
-                const { event } = eventProps; // Extract the event from eventProps
-                const eventStartTime = new Date(event.start_time); // Convert to Date if not already
+                const { event } = eventProps; 
+                const eventStartTime = new Date(event.start_time); 
 
                 return isPast(eventStartTime) || event.type === 'booked'? (
-                    <Rating availableSlot={event} {...eventProps} /> // Replace with your past event component
+                    <Rating availableSlot={event} {...eventProps} /> 
                 ) : (
                     <></>
                 );

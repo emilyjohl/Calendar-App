@@ -23,15 +23,14 @@ function Book ({ currentStudent, availableSlot }: BookProps) {
           .set('accept', 'json')
           .end((err, response) => {
             if(err){
-                console.log('error!')
+              alert('An error occured')
             }else {
-                console.log('returned', response.body)
                 setCoachNum(response.body[0].phonenum)
                 setBooked(true)            
             }
         })
     }catch{
-
+      alert('There has been an error')
     }
   }
 

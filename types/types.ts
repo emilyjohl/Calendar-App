@@ -18,7 +18,7 @@ export type Selectable = {
   };
   
 export type Coach = {
-    coach_id: Number;
+    coach_id: number;
     firstname: string;
     lastname: string;
     phonenum: number;
@@ -27,7 +27,7 @@ export type Coach = {
   };
   
 export type Student = {
-    student_id: Number;
+    student_id: number;
     firstname: string;
     lastName: string;
     phonenum: number;
@@ -43,6 +43,7 @@ export type CurrentUser = {
     phonenum: number;
     availableSlots: number[];
   };
+
   
 export type BookProps = {
     currentStudent: CurrentUser;

@@ -11,7 +11,7 @@ function Rating({ availableSlot }: RatingProps) {
 
     const [rating, setRating] = useState(0);
     const [comments, setComments] = useState(''); 
-    const [showPopup, setShowPopup] = useState(false);
+    const [showRatingPopup, setShowRatingPopup] = useState(false);
 
     // const [isPast, setIsPast] = useState(past)
 
@@ -30,7 +30,7 @@ function Rating({ availableSlot }: RatingProps) {
     async function submitComment() {
         console.log('clicked', rating)
         
-        if(rating <= 0 && showPopup){
+        if(rating <= 0 && showRatingPopup){
             alert('Please select a rating first')
         }else if(rating > 0){
             try{
@@ -45,15 +45,15 @@ function Rating({ availableSlot }: RatingProps) {
                   .end((err, res) => {
                     if(err){
                         console.log('error!')
-                        setShowPopup(false)
+                        setShowRatingPopup(false)
                     }else {
                         console.log('returned', res)
                         setRated(true)
-                        setShowPopup(false)
+                        setShowRatingPopup(false)
                     }
                 })
             }catch{
-
+              alert('An error occured')
             }
         }
     }
@@ -77,13 +77,13 @@ function Rating({ availableSlot }: RatingProps) {
                             </span>
                         ))}
                     </div>
-                    <button  onClick={() => setShowPopup(true)}>View Comment</button>
-                    {showPopup ?
-                    <div className='TRYTHIS'>
+                    <button  onClick={() => setShowRatingPopup(true)}>View Comment</button>
+                    {showRatingPopup ?
+                    <div className='rating-popup'>
                         <div className='rating-popup-content'>
                             <p>{comments}</p>
                             <div className='button-container'>
-                                <button onClick={() => setShowPopup(false)}>Cancel</button>
+                                <button onClick={() => setShowRatingPopup(false)}>Cancel</button>
                             </div>
 
                         </div>
@@ -94,29 +94,6 @@ function Rating({ availableSlot }: RatingProps) {
                 </div>
             ) : (
                 <div>
-                    {/* <div className="rating">
-                        {[5, 4, 3, 2, 1].map((star) => (
-                            <span key={star}>
-                                <input
-                                    type="radio"
-                                    name="rating"
-                                    id={`star${star}`}
-                                    value={star}
-                                    checked={rating === star}
-                                    onChange={() => setRating(star)}
-                                    className="rating-input" 
-                                />
-                                <label
-                                    htmlFor={`star${star}`}
-                                    title={`${star} stars`}
-                                    className={`rating-star ${rating >= star ? 'checked' : ''}`}
-                                    onClick={() => setRating(star)}
-                                >
-                                    <i className="fas fa-star"></i>
-                                </label>
-                            </span>
-                        ))}
-                    </div> */}
                     <div className="rating">
                         {[5, 4, 3, 2, 1].map((star) => (
                             <span key={star}>
@@ -139,14 +116,14 @@ function Rating({ availableSlot }: RatingProps) {
                             </span>
                         ))}
                     </div>
-                    <button onClick={() => setShowPopup(true)}>Add Comments</button>
-                    {showPopup ?
-                    <div className='popup'>
-                        <div className='popup-content'>
+                    <button onClick={() => setShowRatingPopup(true)}>Add Comments</button>
+                    {showRatingPopup ?
+                    <div className='rating-popup'>
+                        <div className='rating-popup-content'>
                             <textarea className='big-textbox' onChange={(e) => setComments(e.target.value)} />
                             <div className='button-container'>
                                 <button onClick={() => submitComment()}>Submit Rating</button>
-                                <button onClick={() => setShowPopup(false)}>Cancel</button>
+                                <button onClick={() => setShowRatingPopup(false)}>Cancel</button>
 
                             </div>
 

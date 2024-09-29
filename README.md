@@ -8,4 +8,7 @@ Here are some consessions I had to make due to the time crunch but could make th
 3. Students and Coches be able to cancel and reschedule meetings, but only within a 24 hour notice period.
 4. Coaches be able to add repeat availability times without needing to click multiple times - (ex. Every Tuesday 2pm-4pm)
 
-Thanks for the time you take to work through my code, I will send you the connection string to my postgres sql so you can test it for yourself. 
+I will send Keanu the connection string to my postgres sql so you can see the database if you like!
+
+Thanks for the time you take to look through my code,
+Emily
